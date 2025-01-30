@@ -24,10 +24,12 @@ plan pe_status_check::agent_state_summary (
   # check if the last report is older than X minutes, for all nodes that have a report
   $current_timestamp = Integer(Timestamp().strftime('%s'))
   $runinterval_seconds = $runinterval * 60
-  $unresponsive = ($nodes - $no_report_nodes).map |$node| {
-    $old_timestamp = Integer(Timestamp($node['report_timestamp']).strftime('%s'))
-    if ($current_timestamp - $old_timestamp) >= $runinterval_seconds {
-      $node
+  $unresponsive = $nodes.map |$node| {
+    if $node['report_timestamp'] {
+      $old_timestamp = Integer(Timestamp($node['report_timestamp']).strftime('%s'))
+      if ($current_timestamp - $old_timestamp) >= $runinterval_seconds {
+        $node['certname']
+      }
     }
   }.filter |$node| { $node =~ NotUndef }
 
